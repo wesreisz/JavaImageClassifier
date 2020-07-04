@@ -16,11 +16,12 @@ import java.util.Map;
 
 
 public class ClassiferService {
+    private static final String MODEL = "xception.h5";
     private static Map<String,String> IMAGENET = StringUtils.loadJsonFromResources("imagenet1000_clsidx_to_labels.txt");
 
     public static String classifyImage(BufferedImage input) {
         //load the model
-        ComputationGraph model = importModel("xception.h5");
+        ComputationGraph model = importModel(MODEL);
 
         //crop, scale, and set RBG on image
         BufferedImage croppedImage = StringUtils.cropImageToRect(input);
@@ -30,15 +31,15 @@ public class ClassiferService {
         //INDArray dummyData = Nd4j.create(new int[] {1, 299, 299, 3});
         INDArray data = StringUtils.makeImageTensor(scaledImage, 128, 128);
 
-        System.out.println("min:" + data.min());
-        System.out.println("max:" + data.max());
+        //Used this to check the answers in Python version Java
+        //System.out.println("min:" + data.min());
+        //System.out.println("max:" + data.max());
 
         INDArray result = model.output(data)[0]; // selects the only output tensor.
-        System.out.println("Size of output: " + result.length());
-        System.out.println("Class index:" + result.argMax(1)); //this is an answer
-        System.out.println("Max activation:" + result.max(1));
-        INDArray test = result.argMax(1);
-        String value2get = test.toStringFull().substring(1,result.argMax(1).toStringFull().length()-1);
+        //System.out.println("Size of output: " + result.length());
+        //System.out.println("Class index:" + result.argMax(1)); //this is an answer
+        //System.out.println("Max activation:" + result.max(1));
+        String value2get = result.argMax(1).toStringFull().substring(1,result.argMax(1).toStringFull().length()-1);
         return IMAGENET.get(value2get);
     }
     private static ComputationGraph importModel(String modelName) {

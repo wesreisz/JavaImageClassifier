@@ -11,18 +11,27 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ClassiferServiceTest {
     @Test
-    void testImageClassification() {
-        //load image
+    void testImageClassificationDog() {
+        BufferedImage bImage = loadImage("dog.jpg");
+        assertEquals("Rottweiler", ClassiferService.classifyImage((bImage)));
+    }
+
+    @Test
+    void testImageClassificationLion() {
+        BufferedImage bImage = loadImage("lion.jpg");
+        assertEquals("lion, king of beasts, Panthera leo", ClassiferService.classifyImage((bImage)));
+    }
+
+    private BufferedImage loadImage(String imageMame){
         BufferedImage bImage = null;
         try {
             ClassLoader classLoader = getClass().getClassLoader();
-            File file = new File(classLoader.getResource("dog.jpg").getFile());
+            File file = new File(classLoader.getResource(imageMame).getFile());
             bImage = ImageIO.read(file);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        assertEquals("Rottweiler", ClassiferService.classifyImage((bImage)));
+        return bImage;
     }
 
 }
