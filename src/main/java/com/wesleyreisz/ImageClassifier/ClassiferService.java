@@ -1,19 +1,23 @@
 package com.wesleyreisz.ImageClassifier;
 
+import org.apache.commons.net.imap.IMAP;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.modelimport.keras.KerasModel;
 import org.deeplearning4j.nn.modelimport.keras.utils.KerasModelBuilder;
 import org.nd4j.common.io.ClassPathResource;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
-import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
 import org.deeplearning4j.nn.modelimport.keras.exceptions.InvalidKerasConfigurationException;
 import org.deeplearning4j.nn.modelimport.keras.exceptions.UnsupportedKerasConfigurationException;
+import org.nd4j.linalg.cpu.nativecpu.NDArray;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Map;
+
 
 public class ClassiferService {
+    private static Map<String,String> IMAGENET = StringUtils.loadJsonFromResources("imagenet1000_clsidx_to_labels.txt");
+
     public static String classifyImage(BufferedImage input) {
         //load the model
         ComputationGraph model = importModel("xception.h5");
@@ -30,13 +34,13 @@ public class ClassiferService {
         System.out.println("max:" + data.max());
 
         INDArray result = model.output(data)[0]; // selects the only output tensor.
-        System.out.println("Test:" + result);
         System.out.println("Size of output: " + result.length());
         System.out.println("Class index:" + result.argMax(1)); //this is an answer
         System.out.println("Max activation:" + result.max(1));
-        return "cat";
+        INDArray test = result.argMax(1);
+        String value2get = test.toStringFull().substring(1,result.argMax(1).toStringFull().length()-1);
+        return IMAGENET.get(value2get);
     }
-
     private static ComputationGraph importModel(String modelName) {
         // load the model
         String simpleMlp = null;

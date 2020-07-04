@@ -1,16 +1,26 @@
 package com.wesleyreisz.ImageClassifier;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.FileUtils;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.springframework.util.ResourceUtils;
 
-import javax.imageio.ImageIO;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.nio.FloatBuffer;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 public class StringUtils {
     public static BufferedImage cropImageToRect(BufferedImage input) {
@@ -21,7 +31,6 @@ public class StringUtils {
         int shiftY = h > outSize ? (h - outSize) / 2 : 0;
         return input.getSubimage(shiftX, shiftY, outSize, outSize);
     }
-
     public static BufferedImage scaleImage(BufferedImage input, int outWidth, int outHeight) {
         int w = input.getWidth();
         int h = input.getHeight();
@@ -33,7 +42,6 @@ public class StringUtils {
 
         return output;
     }
-
     public static INDArray makeImageTensor(BufferedImage img, int imageMean, float imageStd) {
         // DirectColorModel: rmask=ff0000 gmask=ff00 bmask=ff amask=ff000000
         int[] data = ((DataBufferInt) img.getData().getDataBuffer()).getData();
@@ -59,14 +67,32 @@ public class StringUtils {
 
         return toreturn;
     }
-    public static byte[] Convert2ByteArray(BufferedImage bImage) {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    public static Map<String,String> loadJsonFromResources(String fileName){
+        System.out.println(fileName);
+        URL url =  StringUtils.class.getClassLoader().getResource(fileName);
+        System.out.println(url);
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.getFactory().enable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
+        Map<String, String> map = new HashMap();
+
+        //read file
+        String json = "";
+
+        File f = null;
         try {
-            ImageIO.write(bImage, "jpg", bos );
+            json = Files.readString(Paths.get( url.toString().replaceFirst("file:","")));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        byte [] data = bos.toByteArray();
-        return data;
+
+        //load map
+        try {
+            map = mapper.readValue(json, Map.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return map;
     }
 }

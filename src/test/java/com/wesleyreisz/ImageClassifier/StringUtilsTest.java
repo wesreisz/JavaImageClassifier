@@ -7,16 +7,11 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 class StringUtilsTest {
-
-    @Test
-    void testImageToByteArray() {
-        BufferedImage bImage = loadImage();
-        byte[] tensor = StringUtils.Convert2ByteArray(bImage);
-        assertEquals("ffffffff", Integer.toHexString(tensor[0]));
-    }
 
     @Test
     void cropImageToRect() {
@@ -42,6 +37,19 @@ class StringUtilsTest {
         BufferedImage scaledImage = StringUtils.scaleImage(croppedBImage,299, 299);
         INDArray test = StringUtils.makeImageTensor(scaledImage,0, (float)299);
         assertNotNull(test);
+    }
+
+    @Test
+    void loadMapFromJson(){
+        Map<String, String> map = StringUtils.loadJsonFromResources("imagenet1000_clsidx_to_labels.txt");
+        assertNotNull(map);
+        assertEquals("French bulldog",map.get("245"));
+    }
+
+    private Path getFilePath(String file2load){
+        ClassLoader classLoader = StringUtilsTest.class.getClassLoader();
+        File file = new File(classLoader.getResource(file2load).getFile());
+        return file.toPath();
     }
 
     private BufferedImage loadImage(){
